@@ -2,52 +2,61 @@ import tkinter as tk
 from tkinter import scrolledtext, Frame, Label, Entry, Button, Toplevel, messagebox
 from src.nlp.command_parser import CommandParser
 from src.core import app_manager, browser_manager, window_manager, task_scheduler
+from src.utils import config_manager
 
-class TaskEditorWindow(Toplevel):
-    """Ventana emergente para crear y guardar nuevas tareas."""
+class SettingsWindow(Toplevel):
+    """Ventana emergente para gestionar la configuración de la aplicación."""
     def __init__(self, parent):
         super().__init__(parent)
-        self.title("Editor de Tareas")
-        self.geometry("500x400")
-        self.transient(parent) # Mantener esta ventana por encima de la principal
-        self.grab_set() # Modal
+        self.title("Configuración")
+        self.geometry("600x300")
+        self.transient(parent)
+        self.grab_set()
 
-        # Nombre de la tarea
-        Label(self, text="Nombre de la Tarea:", font=("Arial", 12)).pack(pady=(10, 5))
-        self.task_name_entry = Entry(self, font=("Arial", 12))
-        self.task_name_entry.pack(fill=tk.X, padx=10)
+        self.config_data = config_manager.get_config()
 
-        # Comandos
-        Label(self, text="Comandos (uno por línea):", font=("Arial", 12)).pack(pady=(10, 5))
-        self.commands_text = scrolledtext.ScrolledText(self, wrap=tk.WORD, font=("Consolas", 10))
-        self.commands_text.pack(fill=tk.BOTH, expand=True, padx=10)
+        # --- Sección del LLM ---
+        llm_frame = Frame(self, padx=10, pady=10, borderwidth=2, relief="groove")
+        llm_frame.pack(fill=tk.X, padx=10, pady=10)
 
-        # Botón de Guardar
-        Button(self, text="Guardar Tarea", command=self.save_task).pack(pady=10)
+        Label(llm_frame, text="Configuración del LLM", font=("Arial", 14, "bold")).pack(anchor="w")
 
-    def save_task(self):
-        task_name = self.task_name_entry.get().strip()
-        commands_raw = self.commands_text.get("1.0", tk.END).strip()
+        # Endpoint
+        Label(llm_frame, text="Endpoint URL:", font=("Arial", 10)).pack(anchor="w", pady=(10, 0))
+        self.endpoint_entry = Entry(llm_frame, font=("Arial", 10))
+        self.endpoint_entry.pack(fill=tk.X)
+        self.endpoint_entry.insert(0, self.config_data.get("llm", {}).get("endpoint", ""))
 
-        if not task_name or not commands_raw:
-            messagebox.showerror("Error", "El nombre de la tarea y los comandos no pueden estar vacíos.", parent=self)
-            return
+        # Modelo
+        Label(llm_frame, text="Modelo:", font=("Arial", 10)).pack(anchor="w", pady=(10, 0))
+        self.model_entry = Entry(llm_frame, font=("Arial", 10))
+        self.model_entry.pack(fill=tk.X)
+        self.model_entry.insert(0, self.config_data.get("llm", {}).get("model", ""))
 
-        commands = [cmd for cmd in commands_raw.split('\n') if cmd.strip()]
-        result = task_scheduler.save_new_task(task_name, commands)
+        # --- Botones de Acción ---
+        action_frame = Frame(self)
+        action_frame.pack(pady=20)
+        Button(action_frame, text="Guardar", command=self.save_settings).pack(side=tk.LEFT, padx=10)
+        Button(action_frame, text="Cancelar", command=self.destroy).pack(side=tk.LEFT)
 
-        messagebox.showinfo("Resultado", result, parent=self)
-        self.destroy()
+    def save_settings(self):
+        # Actualizar el diccionario de configuración
+        self.config_data["llm"]["endpoint"] = self.endpoint_entry.get().strip()
+        self.config_data["llm"]["model"] = self.model_entry.get().strip()
+
+        if config_manager.save_config(self.config_data):
+            messagebox.showinfo("Éxito", "Configuración guardada correctamente.", parent=self)
+            self.destroy()
+        else:
+            messagebox.showerror("Error", "No se pudo guardar la configuración.", parent=self)
 
 class AutomationGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Asistente de Automatización")
-        self.root.geometry("800x600")
-
+        # ... (el resto del __init__ se mantiene igual)
         self.parser = CommandParser()
         self.function_map = self._initialize_function_map()
-
         self._create_widgets()
         self.log_to_output("Bienvenido al Asistente de Automatización.\n")
 
@@ -56,7 +65,9 @@ class AutomationGUI:
         top_frame.pack(fill=tk.X, padx=10, pady=5)
 
         Button(top_frame, text="Crear Tarea", command=self.open_task_editor).pack(side=tk.LEFT)
+        Button(top_frame, text="Configuración", command=self.open_settings).pack(side=tk.LEFT, padx=5) # Nuevo botón
 
+        # ... (el resto de los widgets se mantienen igual)
         input_frame = Frame(self.root, pady=5)
         input_frame.pack(fill=tk.X, padx=10)
         Label(input_frame, text="Comando:").pack(side=tk.LEFT)
@@ -64,11 +75,15 @@ class AutomationGUI:
         self.command_entry.pack(fill=tk.X, expand=True, side=tk.LEFT, padx=5)
         self.command_entry.bind("<Return>", self.execute_command_event)
         Button(input_frame, text="Ejecutar", command=self.execute_command_event).pack(side=tk.RIGHT)
-
         self.output_text = scrolledtext.ScrolledText(self.root, state="disabled")
         self.output_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         self.command_entry.focus_set()
 
+    def open_settings(self):
+        """Abre la ventana de configuración."""
+        SettingsWindow(self.root)
+
+    # ... (El resto de las funciones de AutomationGUI se mantienen igual)
     def execute_command_event(self, event=None):
         command = self.command_entry.get().strip()
         if not command: return
@@ -148,6 +163,8 @@ class AutomationGUI:
 
 def start_gui():
     root = tk.Tk()
+    # Necesitamos una clase TaskEditorWindow para que esto funcione
+    # Suponiendo que la definimos en algún lugar, como se mostró anteriormente.
     app = AutomationGUI(root)
     root.mainloop()
 
