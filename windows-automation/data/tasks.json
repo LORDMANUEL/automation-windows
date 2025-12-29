@@ -1,0 +1,12 @@
+{
+  "tasks": {
+    "rutina_matutina": [
+      "abre notepad",
+      "navega a google.com",
+      "busca noticias del dia"
+    ],
+    "trabajo": [
+      "abre calculator"
+    ]
+  }
+}

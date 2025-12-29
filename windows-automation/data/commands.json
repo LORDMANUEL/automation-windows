@@ -53,6 +53,18 @@
       "keywords": ["maximiza", "maximizar", "haz grande"],
       "function": "maximizar_ventana",
       "entity": "window_title"
+    },
+    {
+      "name": "ejecutar_tarea",
+      "keywords": ["ejecuta la tarea", "corre la tarea", "haz la tarea"],
+      "function": "ejecutar_tarea",
+      "entity": "task_name"
+    },
+    {
+      "name": "crear_tarea",
+      "keywords": ["crea la tarea", "nueva tarea", "define una tarea"],
+      "function": "crear_tarea",
+      "entity": "task_name"
     }
   ]
 }
