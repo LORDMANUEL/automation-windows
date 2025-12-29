@@ -4,3 +4,4 @@ Selenium
 psutil
 APScheduler
 webdriver-manager
+PyInstaller
