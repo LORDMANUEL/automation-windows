@@ -3,3 +3,4 @@ pywinauto
 Selenium
 psutil
 APScheduler
+webdriver-manager

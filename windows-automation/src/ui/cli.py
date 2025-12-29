@@ -1,44 +1,75 @@
-from src.core.app_manager import abrir_aplicacion, cerrar_aplicacion
+from src.nlp.command_parser import CommandParser
+from src.core import app_manager, browser_manager, window_manager
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+# Mapeo de nombres de función (string) a las funciones reales (callable)
+FUNCTION_MAP = {
+    # App Manager
+    "abrir_aplicacion": app_manager.abrir_aplicacion,
+    "cerrar_aplicacion": app_manager.cerrar_aplicacion,
+    # Browser Manager
+    "navegar_a": browser_manager.navegar_a,
+    "buscar_en_google": browser_manager.buscar_en_google,
+    "cerrar_navegador": browser_manager.cerrar_navegador,
+    # Window Manager
+    "listar_ventanas_abiertas": window_manager.listar_ventanas_abiertas,
+    "enfocar_ventana": window_manager.enfocar_ventana,
+    "minimizar_ventana": window_manager.minimizar_ventana,
+    "maximizar_ventana": window_manager.maximizar_ventana,
+    "mover_ventana": window_manager.mover_ventana,
+    "redimensionar_ventana": window_manager.redimensionar_ventana,
+    "organizar_ventanas": window_manager.organizar_ventanas
+}
+
 def main_loop():
-    """
-    Bucle principal de la interfaz de línea de comandos.
-    """
-    logger.info("Iniciando CLI...")
-    print("Bienvenido al Asistente de Automatización de Windows.")
-    print("Comandos disponibles: 'abre [app]', 'cierra [app]', 'salir'")
+    """Bucle principal de la CLI, ahora impulsado por NLP."""
+    logger.info("Iniciando CLI con NLP...")
+    print("Bienvenido al Asistente de Automatización (NLP activado).")
+    print("Escribe 'salir' para terminar.")
+
+    parser = CommandParser()
 
     while True:
-        command = input("> ").strip().lower()
+        command = input("> ").strip()
         if not command:
             continue
 
-        logger.info(f"Comando recibido: '{command}'")
-
-        if command == "salir":
+        if command.lower() == "salir":
             logger.info("Cerrando CLI...")
+            browser_manager.cerrar_navegador()
             break
 
-        parts = command.split()
-        action = parts[0]
+        function_name, entity = parser.parse_command(command)
 
-        if len(parts) < 2:
-            print("Comando incompleto. Uso: 'accion [argumento]'")
-            continue
+        if function_name and function_name in FUNCTION_MAP:
+            action_function = FUNCTION_MAP[function_name]
 
-        target = parts[1]
+            try:
+                if entity:
+                    result = action_function(entity)
+                else:
+                    result = action_function()
 
-        if action == "abre":
-            result = abrir_aplicacion(target)
-            print(result)
-        elif action == "cierra":
-            result = cerrar_aplicacion(target)
-            print(result)
+                # Imprimir el resultado si no es nulo
+                if result:
+                    # Manejo especial para listas (de listar_ventanas)
+                    if isinstance(result, list):
+                        print("Ventanas abiertas:")
+                        for item in result:
+                            print(f"- {item}")
+                    else:
+                        print(result)
+
+            except TypeError as e:
+                logger.error(f"Error al llamar a la función '{function_name}': {e}")
+                print(f"Error: El comando para '{function_name}' parece estar mal formado.")
+            except Exception as e:
+                logger.error(f"Un error inesperado ocurrió al ejecutar el comando: {e}")
+                print("Ocurrió un error inesperado.")
         else:
-            print(f"Comando '{action}' no reconocido.")
+            print("No entendí ese comando. Intenta de nuevo.")
 
 if __name__ == '__main__':
     main_loop()

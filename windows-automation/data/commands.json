@@ -1,0 +1,58 @@
+{
+  "intents": [
+    {
+      "name": "abrir_aplicacion",
+      "keywords": ["abre", "inicia", "ejecuta", "arranca", "abrir"],
+      "function": "abrir_aplicacion",
+      "entity": "application_name"
+    },
+    {
+      "name": "cerrar_aplicacion",
+      "keywords": ["cierra", "termina", "finaliza", "cerrar"],
+      "function": "cerrar_aplicacion",
+      "entity": "application_name"
+    },
+    {
+      "name": "navegar_a",
+      "keywords": ["navega a", "ve a", "visita", "ir a"],
+      "function": "navegar_a",
+      "entity": "url"
+    },
+    {
+      "name": "buscar_en_google",
+      "keywords": ["busca", "buscar", "encuentra en google"],
+      "function": "buscar_en_google",
+      "entity": "search_term"
+    },
+    {
+      "name": "cerrar_navegador",
+      "keywords": ["cierra navegador", "cerrar chrome", "finaliza el navegador"],
+      "function": "cerrar_navegador",
+      "entity": null
+    },
+    {
+      "name": "listar_ventanas",
+      "keywords": ["lista ventanas", "dime las ventanas", "muestra las ventanas"],
+      "function": "listar_ventanas_abiertas",
+      "entity": null
+    },
+    {
+      "name": "enfocar_ventana",
+      "keywords": ["enfoca", "enfocar", "trae al frente", "cambia a la ventana"],
+      "function": "enfocar_ventana",
+      "entity": "window_title"
+    },
+    {
+      "name": "minimizar_ventana",
+      "keywords": ["minimiza", "minimizar"],
+      "function": "minimizar_ventana",
+      "entity": "window_title"
+    },
+    {
+      "name": "maximizar_ventana",
+      "keywords": ["maximiza", "maximizar", "haz grande"],
+      "function": "maximizar_ventana",
+      "entity": "window_title"
+    }
+  ]
+}
